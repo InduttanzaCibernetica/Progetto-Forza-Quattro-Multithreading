@@ -1,5 +1,6 @@
 package data;
 
-public class PlayerSession {
+import enums.Token;
 
+public class PlayerSession {
 }
