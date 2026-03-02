@@ -1,0 +1,63 @@
+package forza4.client;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+
+public class ServerListener implements Runnable {
+
+	private boolean running;
+	private BufferedReader reader;
+	private Socket socket;
+	private CodaCircolare coda;
+	
+	public ServerListener(Socket socket) {
+		
+		try {
+			this.running = true;
+			this.socket = socket;
+			this.coda = new CodaCircolare(10);
+			this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		} catch (IOException e) {
+			e.printStackTrace();
+			stop();
+		}
+		
+	}
+	
+	public void stop() {
+		
+		try {
+			if(this.reader != null) {
+				this.reader.close();
+			}
+			if(this.socket != null) {
+				socket.close();
+			}
+		} catch (IOException e){
+			e.printStackTrace();
+		} finally {
+			this.running = false;
+		}
+		
+	}
+	
+	public String getMessage () throws InterruptedException {
+		return coda.preleva();
+	}
+
+	@Override
+	public void run() {
+		while(running) {
+			try {
+				String message = reader.readLine();
+				coda.inserisci(message);
+			} catch(IOException | InterruptedException e) {
+				e.printStackTrace();
+				this.stop();
+			}
+		}
+	}
+
+}
