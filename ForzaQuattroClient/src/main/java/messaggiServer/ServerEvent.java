@@ -5,7 +5,7 @@ import enums.ServerEventType;
 public interface ServerEvent {
 
 	public static String enumToString(ServerEventType name) {
-		
+		//non so perché questo sia qui
 		switch(name){
 			case WELCOME:
 				return "WELCOME";
@@ -33,5 +33,10 @@ public interface ServerEvent {
 				System.out.println("Errore: Messaggio non riconosciuto.");
 				return null;
 		}
+		
+		
 	}
+
+	public void action();//ogni messaggio farà override di questo metodo con quello che fanno all'interno
+	
 }
