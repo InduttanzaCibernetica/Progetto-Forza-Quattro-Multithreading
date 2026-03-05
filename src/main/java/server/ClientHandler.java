@@ -1,14 +1,7 @@
-//*********************************//
-// !ATTENZIONE! CLASSE DA RIVEDERE //
-//*********************************//
-
-
-
 package server;
 
 import data.Player;
 import data.PlayerSession;
-import enums.Token;
 import protocol.Command;
 import protocol.MessageFormatter;
 import protocol.MessageParser;
@@ -16,20 +9,21 @@ import java.io.*;
 import java.net.Socket;
 
 public class ClientHandler implements Runnable {
-    private final Socket socket;           //connessione col client
-    private final BufferedReader in;       //legge messaggi dal client
-    private final PrintWriter out;	//invia messaggi al client
-    private final GameManager gameManager; //riferimento al game manager
-    private final MessageParser parser;	//parser dei messaggi in arrivo
-    private final MessageFormatter formatter; //parser dei messaggi in uscita
-    private PlayerSession session;	//sessione del giocatore
-    private GameRoom room;	//stanza partita corrente
+
+    private final Socket socket;
+    private final BufferedReader in;
+    private final PrintWriter out;
+    private final GameManager gameManager;
+    private final MessageParser parser;
+    private final MessageFormatter formatter;
+    private PlayerSession session;
+    private GameRoom room;
 
     public ClientHandler(Socket socket, GameManager gameManager) throws IOException {
         this.socket = socket;
         this.gameManager = gameManager;
         this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        this.out = new PrintWriter(socket.getOutputStream(), true); // flush automatico
+        this.out = new PrintWriter(socket.getOutputStream(), true);
         this.parser = new MessageParser();
         this.formatter = new MessageFormatter();
     }
@@ -38,17 +32,16 @@ public class ClientHandler implements Runnable {
     public void run() {
         try {
             String raw;
-            while ((raw = in.readLine()) != null) { // legge messaggi in arrivo finché il client è connesso
+            while ((raw = in.readLine()) != null) {
                 handleMessage(raw);
             }
         } catch (IOException e) {
             System.out.println("Client disconnesso: " + socket.getInetAddress());
         } finally {
-            onDisconnect(); // gestisce la disconnessione
+            onDisconnect();
         }
     }
 
-    // smista il messaggio in base al tipo di comando
     public void handleMessage(String raw) {
         Command cmd = parser.parse(raw);
         if (cmd == null) {
@@ -56,71 +49,75 @@ public class ClientHandler implements Runnable {
             return;
         }
         switch (cmd.getType()) {
-            case CONNECT  -> handleConnect(cmd);
-            case MOVE     -> handleMove(cmd);
-            case QUIT     -> handleQuit();
-            case NEWGAME  -> handleNewGame();
+            case CONNECT: {
+                handleConnect(cmd);
+                break;
+            }
+            case MOVE: {
+                handleMove(cmd);
+                break;
+            }
+            case QUIT: {
+                handleQuit();
+                break;
+            }
+            case NEWGAME: {
+                handleNewGame();
+                break;
+            }
         }
     }
 
-    // gestisce la connessione iniziale del client
     private void handleConnect(Command cmd) {
-        String name = cmd.getParameters()[0];       // es. "Alberto"
-        int age = Integer.parseInt(cmd.getParameters()[1]); // es. 18
-        Player player = new Player(0, name, age);   // id assegnato dal server in seguito
+        String name = cmd.getParameters()[0];
+        int age = Integer.parseInt(cmd.getParameters()[1]);
+        Player player = new Player(0, name, age);
         session = new PlayerSession(player, this);
-        sendMessage(formatter.formatWait());         // avvisa il client che è in attesa
+        sendMessage(formatter.formatWait());
         try {
-            gameManager.assignPlayer(session);       // inserisce il giocatore nella coda
+            gameManager.assignPlayer(session);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    // gestisce una mossa del giocatore
     private void handleMove(Command cmd) {
         if (room == null) {
             sendMessage(formatter.formatError("Partita non iniziata"));
             return;
         }
-        int col = Integer.parseInt(cmd.getParameters()[0]); // colonna scelta dal giocatore
-        room.handleMove(session, col);                      // delega alla GameRoom
+        int col = Integer.parseInt(cmd.getParameters()[0]);
+        room.handleMove(session, col);
     }
 
-    // gestisce l'abbandono della partita
     private void handleQuit() {
-        if (room != null) room.onDisconnect(session); // la GameRoom assegna la vittoria all'avversario
+        if (room != null) room.onDisconnect(session);
         close();
     }
 
-    // gestisce la richiesta di una nuova partita
     private void handleNewGame() {
-        room = null; // resetta la stanza corrente
+        room = null;
         sendMessage(formatter.formatWait());
         try {
-            gameManager.assignPlayer(session); // reinserisce il giocatore in coda
+            gameManager.assignPlayer(session);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
     }
 
-    // chiamato in caso di disconnessione improvvisa
     private void onDisconnect() {
-        if (room != null) room.onDisconnect(session); // notifica la GameRoom
+        if (room != null) room.onDisconnect(session);
         close();
     }
 
-    // invia un messaggio al client
     public void sendMessage(String msg) {
         out.println(msg);
     }
 
-    // imposta la GameRoom quando la partita inizia
     public void setRoom(GameRoom room) {
         this.room = room;
     }
 
-    // chiude la connessione
     private void close() {
         try {
             socket.close();

@@ -3,10 +3,10 @@ package data;
 public class PlayerQueue {
 
     private final PlayerSession[] buffer;
-    private final int capacita;           //capacità massima della coda
-    private int numeroElementi;           //numero di giocatori attualmente in attesa
-    private int head;                     //testa
-    private int tail;                     //coda
+    private final int capacita;
+    private int numeroElementi;
+    private int head;
+    private int tail;
 
     public PlayerQueue(int capacita) {
         this.capacita = capacita;
@@ -17,26 +17,23 @@ public class PlayerQueue {
     }
 
     public synchronized void enqueue(PlayerSession session) throws InterruptedException {
-        while (numeroElementi == capacita) wait(); //aspetta se la coda è piena
+        while (numeroElementi == capacita) wait();
         buffer[tail] = session;
-        tail = (tail + 1) % capacita; //avanza tail circolarmente
+        tail = (tail + 1) % capacita;
         numeroElementi++;
         notifyAll();
     }
 
     public synchronized PlayerSession dequeue() throws InterruptedException {
-        while (numeroElementi == 0) wait(); // aspetta se la coda è vuota
-        PlayerSession session = buffer[head];
-        head = (head + 1) % capacita; // avanza head circolarmente
+        while (numeroElementi == 0) wait();
+        PlayerSession session = buffer[head]; // fix: rimossi i __
+        head = (head + 1) % capacita;
         numeroElementi--;
         notifyAll();
         return session;
     }
 
     public synchronized boolean isEmpty() {
-        return numeroElementi == 0; // true se non ci sono giocatori in attesa
+        return numeroElementi == 0;
     }
 }
-
-
-

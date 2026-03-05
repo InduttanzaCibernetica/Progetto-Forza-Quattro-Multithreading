@@ -7,7 +7,7 @@ public class MessageFormatter {
 		return "WELCOME;" + playerId;
 	}
 	public String formatWait() {
-		return "WAIT;";
+		return "WAIT";
 	}
 	public String formatStart(Token token) {
 		return "START;" + token.name();	//es: START;X oppure START;O
