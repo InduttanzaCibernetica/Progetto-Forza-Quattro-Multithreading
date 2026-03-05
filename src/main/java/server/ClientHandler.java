@@ -1,3 +1,9 @@
+//*********************************//
+// !ATTENZIONE! CLASSE DA RIVEDERE //
+//*********************************//
+
+
+
 package server;
 
 import data.Player;
