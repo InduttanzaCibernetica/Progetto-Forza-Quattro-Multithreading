@@ -1,17 +1,23 @@
 package messaggiServer;
-
+ 
 import enums.ServerEventType;
-
+ 
 public class LoseMessage implements ServerEvent {
 	private ServerEventType id = ServerEventType.LOSE;
+	private String reason;
 	
-	public LoseMessage() {
-		
+	public LoseMessage(String reason) {
+		this.reason = reason;
 	}
-
+	
+	public String getId() {
+		return ServerEvent.enumToString(this.id);
+	}
+ 
 	@Override
 	public void action() {
-		// TODO Auto-generated method stub
+		System.out.println("Hai perso! " + this.reason);
 		
 	}
 }
+ 

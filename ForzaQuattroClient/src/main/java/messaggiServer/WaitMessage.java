@@ -10,6 +10,11 @@ public class WaitMessage implements ServerEvent {
 	}
 
 	@Override
+	public String getId() {
+		return ServerEvent.enumToString(id);
+	}
+	
+	@Override
 	public void action() {
 		System.out.println("Attendi la connessione di un'altro giocatore...");
 	}

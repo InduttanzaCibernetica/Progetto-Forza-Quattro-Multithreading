@@ -10,8 +10,14 @@ public class TurnMessage implements ServerEvent {
 	}
 
 	@Override
-	public void action() {
+	public String getId() {
 		// TODO Auto-generated method stub
-		
+		return null;
 	}
+	
+	@Override
+	public void action() {
+		System.out.println("Hey, è il tuo turno!");
+	}
+
 }

@@ -4,14 +4,21 @@ import enums.ServerEventType;
 
 public class WinMessage implements ServerEvent {
 	private ServerEventType id = ServerEventType.WIN;
+	private String reason;
 	
-	public WinMessage() {
-		
+	public WinMessage(String reason) {
+		this.reason = reason;
+	}
+	
+	@Override
+	public String getId() {
+		return ServerEvent.enumToString(id);
 	}
 
 	@Override
 	public void action() {
-		// TODO Auto-generated method stub
+		System.out.println("Hai vinto! " + this.reason);
 		
 	}
+
 }

@@ -1,11 +1,13 @@
 package messaggiServer;
-
+ 
 import enums.ServerEventType;
-
+ 
 public interface ServerEvent {
-
+ 
+	public String getId();
+	
 	public static String enumToString(ServerEventType name) {
-		//non so perché questo sia qui
+		//questo è qui per semplificare la gestione dei messaggi nel client
 		switch(name){
 			case WELCOME:
 				return "WELCOME";
@@ -36,7 +38,7 @@ public interface ServerEvent {
 		
 		
 	}
-
+ 
 	public void action();//ogni messaggio farà override di questo metodo con quello che fanno all'interno
 	
 }

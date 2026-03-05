@@ -1,7 +1,7 @@
 package forza4.client;
-
+ 
 import messaggiServer.*;
-
+ 
 public class MessageParser {
 	
 	public MessageParser() {
@@ -21,13 +21,13 @@ public class MessageParser {
 			msg = new DrawMessage();
 			break;
 		case "ERROR":
-			msg = new ErrorMessage();
+			msg = new ErrorMessage(strarr[1]);
 			break;
 		case "LOSE":
-			msg = new LoseMessage();
+			msg = new LoseMessage(strarr[1]);
 			break;
 		case "START":
-			msg = new StartMessage();
+			msg = new StartMessage(strarr[1]);
 			break;
 		case "TIMEOUT":
 			msg = new TimeoutMessage();
@@ -36,16 +36,16 @@ public class MessageParser {
 			msg = new TurnMessage();
 			break;
 		case "VALID":
-			msg = new ValidMessage();
+			msg = new ValidMessage(strarr[1]);
 			break;
 		case "WAIT":
 			msg = new WaitMessage();
 			break;
 		case "WELCOME":
-			msg = new WelcomeMessage();
+			msg = new WelcomeMessage(strarr[1]);
 			break;
 		case "WIN":
-			msg = new WinMessage();
+			msg = new WinMessage(strarr[1]);
 			break;
 		default:
 			System.out.println("Errore: messaggio non riconosciuto.");
