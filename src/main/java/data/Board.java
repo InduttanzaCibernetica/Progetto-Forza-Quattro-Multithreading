@@ -3,104 +3,78 @@ package data;
 import enums.Token;
 
 public class Board {
-	//dimensione della tabella di forza quattro 6x7
-	public static final int ROWS=6;
-	public static final int COLS=7;	
-	private final Token[][] grid;
-	
-	public Board() {
-		this.grid=new Token[ROWS][COLS];
-		//all'inizio è tutto vuoto (null)
-	}
-	//se la colonna ha almeno una cella vuota libera e è valida restituisce true
-	public boolean isColumnAvailable(int col) {
-		if(!inBoundsCol(col)) return false;
-		return grid[0][col]==null;
-	}
-	
-	public boolean applyMove(Token token, int col) {
-		if(token==null) return false;
-		if(!inBoundsCol(col)) return false;
-		for(int r=ROWS-1; r>=0; r--) {
-			if(grid[r][col]==null) {
-				grid[r][col]=token;
-				return true;
-			}
-		}
-		return false; //colonna piena
-	}
-	
-	public boolean checkVictory(Token token) {
-		if(token==null) return false;
-		
-		//orizzontali
-		for(int r=0; r<ROWS; r++) {
-			for(int c=0; c<=COLS-4; c++) {
-				if(line4(token, r, c, 0, 1)) return true;
-			}
-		}
-		
-		//verticali
-		for(int c=0; c<COLS; c++) {
-			for(int r=0; r<=ROWS-4; r++) {
-				if(line4(token, r, c, 1, 0)) return true;
-			}
-		}
-		//diagonali (dr=+1, dc=+1)
-		for(int r=0; r<=ROWS-4; r++) {
-			for(int c=0; c<=COLS-4; c++) {
-				if(line4(token, r, c, 1, 1)) return true;
-			}
-		}
-		//diagonali (dr=+1, dc=-1)
-		for(int r=0; r<=ROWS-4; r++) {
-			for(int c=3; c<COLS; c++) {
-				if(line4(token, r, c, 1, -1)) return true;
-			}
-		}
-		return false;
-	}
-	// true se la tabella è piena e quindi nessuna cella è libera
-	
-	public boolean isFull() {
-		// la tabella non è piena se nella prima riga c'è una cella libera
-		for(int c=0; c<COLS; c++) {
-			if(grid[0][c]==null) return false;
-		}
-		return true;
-	}
-	
-	//cella vuota -> .
-	//Token.X -> X
-	//Token.O -> O
-	public String toLinearState() {
-		StringBuilder sb=new StringBuilder(ROWS*COLS);
-		for(int r=0; r<ROWS; r++) {
-			for(int c=0; c<COLS; c++) {
-				Token t=grid[r][c];
-				sb.append(t==null ? '.' : (t==Token.X ? 'X' : 'O'));
-			}
-		}
-		return sb.toString();
-	}
-	
 
-	private boolean inBoundsCol(int c) {
-        return c >= 0 && c < COLS;
+    public static final int ROWS = 6;
+    public static final int COLS = 7;
+
+    private final Token[][] grid = new Token[ROWS][COLS];
+
+    public boolean isColumnAvailable(int col) {	// da true se colonna è valida e ha una cella libera
+    	
+        return col >= 0 && col < COLS && grid[0][col] == null;	//controllo cella in cima
     }
-    private boolean inBounds(int r, int c) {
-        return r >= 0 && r < ROWS && c >= 0 && c < COLS;
+  
+    
+    
+
+    public boolean applyMove(Token token, int col) {	//inserimento del token in basso alla colonna se libera, false se non si può
+    	
+        if (token == null || !isColumnAvailable(col)) return false;	//per colonna non disponibile
+        for (int r = ROWS - 1; r >= 0; r--) {	//gravità dal basso verso alto
+        	
+            if (grid[r][col] == null) {	//prima cella libera trovata
+            	
+                grid[r][col] = token;	//mette disco
+                
+                return true;	//andato a buon fine
+            }
+        }
+        return false;	//non andato a buon fine; colonna piena (a regola qua non dovrebbe arrivare, in questa riga si intente)
+    }
+    
+    
+    
+
+    //restituisce true se token ha 4 dischi consecutivi in verticale, orizzontale o diagonale
+    public boolean checkVictory(Token token) {
+        if (token == null) return false;
+        int[][] directions = {{0,1},{1,0},{1,1},{1,-1}};	//orizzontale, verticale, diagonale sinitra e destra
+        
+        for (int r = 0; r < ROWS; r++) {	//scorro le righe
+        	
+            for (int c = 0; c < COLS; c++) {	//scorro le colonne
+            	
+                for (int[] direzione : directions) {	//prova ogni direzione
+                    if (line4(token, r, c, direzione[0], direzione[1])) return true;	//se trova una sequenza da quattro
+                }
+            }
+        }
+        return false;
     }
 
-    // Controlla una sottolinea di 4 celle a partire da (r,c) con direzione (dr,dc).
+    
+    //restituisce true se tutte le celle della prima riga sono occupate e quindi tabella piena deh
+    public boolean isFull() {
+        for (int c = 0; c < COLS; c++)
+            if (grid[0][c] == null) return false;
+        return true;
+    }
+
+    public String toLinearState() {
+        StringBuilder sb = new StringBuilder(ROWS * COLS);
+        for (Token[] row : grid)
+            for (Token t : row)
+                sb.append(t == null ? '.' : t.name());
+        return sb.toString();
+    }
+
     private boolean line4(Token t, int r, int c, int dr, int dc) {
         for (int k = 0; k < 4; k++) {
             int rr = r + dr * k;
             int cc = c + dc * k;
-            if (!inBounds(rr, cc)) return false;
+            if (rr < 0 || rr >= ROWS || cc < 0 || cc >= COLS) return false;
             if (grid[rr][cc] != t) return false;
         }
         return true;
     }
-	
 }
