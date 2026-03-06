@@ -2,7 +2,6 @@ package forza4.client;
  
 import java.io.IOException;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.Set;
 import java.io.PrintWriter;
@@ -31,9 +30,7 @@ public class Client {
 		this.parser = new MessageParser();
 	}
 	
-	public void sendCommand(String message) {
-		out.println(message);
-	}
+	//METODI GESTIONE PARTITA
 	
 	public void handleEvent(ServerEvent msg) {
 		
@@ -50,7 +47,7 @@ public class Client {
 			
 			do {
 				System.out.println("Inserisci la tua mossa... (una colonna da 1 a 7, o forfeit per abbandonare.)");
-				move = scanner.next();
+				move = scanner.nextLine();
 			}while(!checkMove(move));
 			
 			if (move.equals("forfeit")) {
@@ -64,6 +61,22 @@ public class Client {
 		} else {
 			msg.action();
 		}
+	}
+	
+	public boolean checkMove(String move) {
+		
+		if(move.equals("forfeit")) {
+			return true;
+		} else if (Integer.parseInt(move) >= 1 && Integer.parseInt(move) <= 7) {
+			return true;
+		}
+		System.out.println("Mossa invalida.");
+		return false;
+	}
+	
+	//METODI GESTIONE COMUNICAZIONE
+	public void sendCommand(String message) {
+		out.println(message);
 	}
 	
 	public void disconnect() {
@@ -85,17 +98,7 @@ public class Client {
 		System.out.println("Disconnessione effettuata.");
 	}
 	
-	public boolean checkMove(String move) {
-		
-		if(move.equals("forfeit")) {
-			return true;
-		} else if (Integer.parseInt(move) >= 1 && Integer.parseInt(move) <= 7) {
-			return true;
-		}
-		System.out.println("Mossa invalida.");
-		return false;
-	}
-	
+	//METODI INIZIO PARTITA
 	public void start(String serverAddress, int port) {
 		
 		try {

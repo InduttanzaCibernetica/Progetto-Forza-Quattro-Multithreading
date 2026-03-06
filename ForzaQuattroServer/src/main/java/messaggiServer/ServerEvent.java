@@ -1,11 +1,12 @@
 package messaggiServer;
-
+ 
 import enums.ServerEventType;
-
+ 
 public interface ServerEvent {
-
+ 
+	public String getId();
+	
 	public static String enumToString(ServerEventType name) {
-		
 		switch(name){
 			case WELCOME:
 				return "WELCOME";
@@ -33,5 +34,8 @@ public interface ServerEvent {
 				System.out.println("Errore: Messaggio non riconosciuto.");
 				return null;
 		}
+		
+		
 	}
+ 
 }
