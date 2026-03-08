@@ -115,7 +115,7 @@ public class Client {
 		
 	}
 	
-	public void play() { //è un mondo succoso
+	public void play() {
 		this.playing = true;
 		this.currentmsg = new ConnectMessage(username, age);
 		sendCommand(MessageFormatter.format(currentmsg));
@@ -123,7 +123,6 @@ public class Client {
 		
 		while(playing) {
 			try {
-				//da rivedere la ricezione di messaggi
 				servermsg = listener.getMessage();
 				ServerEvent msg = parser.parse(servermsg);
 				handleEvent(msg);
