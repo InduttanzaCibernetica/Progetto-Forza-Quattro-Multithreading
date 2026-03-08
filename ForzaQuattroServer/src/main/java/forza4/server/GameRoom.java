@@ -1,4 +1,3 @@
-//DA RIVEDERE
 package forza4.server;
 
 import data.Board;
@@ -21,7 +20,7 @@ public class GameRoom {
     private GameState state = GameState.WAITING;
     private ServerEvent currentEvent;
 
-    private static final long TIMEOUT_MILLIS = 15_000; // 15 secondi per turno
+    private static final long TIMEOUT_MILLIS = 30_000; // 30 secondi per turno
 
     public GameRoom(PlayerSession player1, PlayerSession player2, GameQueue activeGames) {
         this.player1 = player1;
@@ -32,16 +31,21 @@ public class GameRoom {
     public void start() {
         state = GameState.ACTIVE;
         currentTurn = player1.getPlayer().getToken(); // player1 ha sempre X e inizia
-
+        
         // manda START a entrambi
-        player1.getHandler().sendMessage(formatter.formatStart(player1.getPlayer().getToken()));
-        player2.getHandler().sendMessage(formatter.formatStart(player1.getPlayer().getToken()));
+        currentEvent = new StartMessage(player1.getPlayer().getToken());
+        player1.getHandler().sendMessage(formatter.format(currentEvent));
+        
+        currentEvent = new StartMessage(player2.getPlayer().getToken());
+        player2.getHandler().sendMessage(formatter.format(currentEvent));
 
         // manda la griglia vuota
-        broadcast(formatter.formatBoard(board.toLinearState()));
+        currentEvent = new ValidMessage(board.toLinearState());
+        broadcast(formatter.format(currentEvent));
 
         // notifica chi deve muovere
-        getSessionByToken(currentTurn).getHandler().sendMessage(formatter.formatTurn());
+        currentEvent = new TurnMessage();
+        getSessionByToken(currentTurn).getHandler().sendMessage(formatter.format(currentEvent));
 
         // avvia il timer
         timer.start(this, TIMEOUT_MILLIS);
@@ -50,48 +54,62 @@ public class GameRoom {
     public synchronized boolean handleMove(PlayerSession session, int col) {
         if (state != GameState.ACTIVE) return false;
         if (session.getPlayer().getToken() != currentTurn) {
-            session.getHandler().sendMessage(formatter.formatError("Non è il tuo turno"));
+        	currentEvent = new ErrorMessage("Non è il tuo turno");
+            session.getHandler().sendMessage(formatter.format(currentEvent));
             return false;
         }
         if (!board.isColumnAvailable(col)) {
-            session.getHandler().sendMessage(formatter.formatError("Colonna non disponibile"));
+        	currentEvent = new ErrorMessage("Colonna non disponibile");
+            session.getHandler().sendMessage(formatter.format(currentEvent));
             return false;
         }
 
         timer.cancel();
         board.applyMove(currentTurn, col);
-        broadcast(formatter.formatBoard(board.toLinearState()));
+        currentEvent = new ValidMessage(board.toLinearState());
+        broadcast(formatter.format(currentEvent));
 
         if (board.checkVictory(currentTurn)) {
-            session.getHandler().sendMessage(formatter.formatWin("Hai allineato 4 dischi"));
-            getOpponent(session).getHandler().sendMessage(formatter.formatLose("Hai perso"));
+        	currentEvent = new WinMessage("Hai allineato 4 dischi");
+            session.getHandler().sendMessage(formatter.format(currentEvent));
+            currentEvent = new LoseMessage("Il tuo avversario ha allineato 4 dischi");
+            getOpponent(session).getHandler().sendMessage(formatter.format(currentEvent));
             endGame();
             return true;
         }
         if (board.isFull()) {
-            broadcast(formatter.formatDraw());
+        	currentEvent = new DrawMessage();
+            broadcast(formatter.format(currentEvent));
             endGame();
             return true;
         }
 
         // passa il turno
         currentTurn = (currentTurn == Token.X) ? Token.O : Token.X;
-        getSessionByToken(currentTurn).getHandler().sendMessage(formatter.formatTurn());
+        currentEvent = new TurnMessage();
+        getSessionByToken(currentTurn).getHandler().sendMessage(formatter.format(currentEvent));
         timer.start(this, TIMEOUT_MILLIS);
         return true;
     }
 
     public void onTimeout() {
         if (state != GameState.ACTIVE) return;
-        broadcast(formatter.formatTimeout());
-        getOpponent(getSessionByToken(currentTurn)).getHandler().sendMessage(formatter.formatWin("Avversario in timeout"));
-        getSessionByToken(currentTurn).getHandler().sendMessage(formatter.formatLose("Tempo scaduto"));
-        endGame();
+        	currentEvent = new TimeoutMessage();
+	        broadcast(formatter.format(currentEvent));
+	        
+	        currentEvent = new WinMessage("Avversario in timeout");
+	        getOpponent(getSessionByToken(currentTurn)).getHandler().sendMessage(formatter.format(currentEvent));
+	        //getSessionByToken(currentTurn).getHandler().sendMessage(formatter.formatLose("Tempo scaduto"));
+	        endGame();
     }
 
     public void onDisconnect(PlayerSession session) {
         if (state != GameState.ACTIVE) return;
-        getOpponent(session).getHandler().sendMessage(formatter.formatWin("Avversario disconnesso"));
+        currentEvent = new DisconnectMessage();
+        getSessionByToken(currentTurn).getHandler().sendMessage(formatter.format(currentEvent));
+        
+        currentEvent = new WinMessage("Avversario disconnesso");
+        getOpponent(session).getHandler().sendMessage(formatter.format(currentEvent));
         endGame();
     }
 

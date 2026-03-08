@@ -1,4 +1,3 @@
-//DA RIVEDERE
 package forza4.server;
 
 import data.Player;

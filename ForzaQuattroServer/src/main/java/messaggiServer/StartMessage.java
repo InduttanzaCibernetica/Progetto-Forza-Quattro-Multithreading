@@ -1,14 +1,14 @@
 package messaggiServer;
 
 import enums.ServerEventType;
+import enums.Token;
 
 public class StartMessage implements ServerEvent {
 	private ServerEventType id = ServerEventType.START;
-	private final int COLUMNS = 7;
-	private String board;
-	//PENSO che stampi la matrice vuota iniziale
-	public StartMessage(String board) {
-		this.board = board;
+	private String token;
+
+	public StartMessage(Token token) {
+		this.token = token.name();
 	}
 
 	
