@@ -15,5 +15,8 @@ public class TurnMessage implements ServerEvent {
 		return null;
 	}
 	
-	
+	@Override
+	public String toString() {
+		return ServerEvent.enumToString(id);
+	}
 }

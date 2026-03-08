@@ -3,7 +3,7 @@ import messaggiClient.*;
 
 public class MessageParser {
 
-	public static ClientCommand parse(String msg) {
+	public ClientCommand parse(String msg) {
 		String[] strarr = msg.split(";");
 		ClientCommand cmd = null;
 		

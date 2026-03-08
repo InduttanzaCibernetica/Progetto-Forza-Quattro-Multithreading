@@ -9,7 +9,7 @@ public class MessageFormatter {
 		
 	}
 
-	public static String format(ServerEvent cmd) {
+	public String format(ServerEvent cmd) {
 		String msg = cmd.toString();
 		return msg;
 	}

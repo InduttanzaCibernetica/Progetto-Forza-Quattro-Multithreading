@@ -35,13 +35,12 @@ public class Client {
 	public void handleEvent(ServerEvent msg) {
 		
 		Set<String> DisconnectValues = Set.of("DISCONNECT", "DRAW", "ERROR", "LOSE", "TIMEOUT", "WIN"); //Set dei messaggi che fanno disconnettere il client
-		Set<String> MoveValues = Set.of("START", "TURN");
 		
 		if (DisconnectValues.contains(msg.getId())) {
 			msg.action();
 			this.disconnect();
 		}
-		else if (MoveValues.contains(msg.getId())){
+		else if (msg.getId().equals("TURN")){
 			msg.action();
 			String move;
 			

@@ -13,6 +13,9 @@ public class TimeoutMessage implements ServerEvent{
 		return ServerEvent.enumToString(this.id);
 	}
 	
-	
+	@Override
+	public String toString() {
+		return ServerEvent.enumToString(id);
+	}
 }
  
