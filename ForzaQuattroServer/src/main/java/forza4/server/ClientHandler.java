@@ -61,15 +61,15 @@ public class ClientHandler implements Runnable {
                 break;
             }
             case "QUIT": {
-                handleQuit();
+                onDisconnect();
                 break;
             }
         }
     }
 
-    private void handleConnect(ConnectMessage cmd) {
-        String name = cmd.getName();
-        int age = (cmd.getAge());
+    private void handleConnect(ClientCommand cmd) {
+        String name = ((ConnectMessage)cmd).getName();
+        int age = ((ConnectMessage)cmd).getAge();
         Player player = new Player(0, name, age);
         session = new PlayerSession(player, this);
         currentEvent = new WaitMessage();
@@ -81,19 +81,14 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void handleMove(MoveMessage cmd) {
+    private void handleMove(ClientCommand cmd) {
         if (room == null) {
         	currentEvent = new ErrorMessage("Partita non iniziata.");
             sendMessage(formatter.format(currentEvent));
             return;
         }
-        int col = (cmd.getColumn());
+        int col = ((MoveMessage)cmd).getColumn();
         room.handleMove(session, col);
-    }
-
-    private void handleQuit() {
-        if (room != null) room.onDisconnect(session);
-        close();
     }
 
 
