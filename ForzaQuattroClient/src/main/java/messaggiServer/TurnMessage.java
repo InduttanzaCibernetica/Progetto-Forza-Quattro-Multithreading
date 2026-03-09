@@ -12,7 +12,7 @@ public class TurnMessage implements ServerEvent {
 	@Override
 	public String getId() {
 		// TODO Auto-generated method stub
-		return null;
+		return ServerEvent.enumToString(id);
 	}
 	
 	@Override

@@ -17,7 +17,7 @@ public class WelcomeMessage implements ServerEvent {
 	
 	@Override
 	public String toString() {
-		return ServerEvent.enumToString(id) + this.PlayerId;
+		return ServerEvent.enumToString(id) + ";" + this.PlayerId;
 	}
 
 }

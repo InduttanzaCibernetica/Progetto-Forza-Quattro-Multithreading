@@ -27,7 +27,7 @@ public class ServerListener implements Runnable {
 	}
 	
 	public void stop() {
-		
+		this.running = false;
 		try {
 			if(this.reader != null) {
 				this.reader.close();
@@ -35,10 +35,10 @@ public class ServerListener implements Runnable {
 			if(this.socket != null) {
 				socket.close();
 			}
-		} catch (IOException e){
+			
+			coda.inserisci("DISCONNECT_INTERNAL");
+		} catch (IOException | InterruptedException e){
 			e.printStackTrace();
-		} finally {
-			this.running = false;
 		}
 		
 	}

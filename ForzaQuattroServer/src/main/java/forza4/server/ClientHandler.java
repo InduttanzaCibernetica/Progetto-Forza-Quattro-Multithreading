@@ -87,7 +87,7 @@ public class ClientHandler implements Runnable {
             return;
         }
         int col = ((MoveMessage)cmd).getColumn();
-        room.handleMove(session, col);
+        room.handleMove(session, col - 1);
     }
 
 

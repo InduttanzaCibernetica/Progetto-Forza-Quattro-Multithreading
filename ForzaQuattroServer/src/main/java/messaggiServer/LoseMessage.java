@@ -16,7 +16,7 @@ public class LoseMessage implements ServerEvent {
  
 	@Override
 	public String toString() {
-		return ServerEvent.enumToString(id) + this.reason;
+		return ServerEvent.enumToString(id) + ";" + this.reason;
 	}
 }
  

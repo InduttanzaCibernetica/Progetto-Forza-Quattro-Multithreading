@@ -37,4 +37,8 @@ public class PlayerQueue {
     public synchronized boolean isEmpty() {
         return numeroElementi == 0;
     }
+    
+    public synchronized int getSize() {
+    	return numeroElementi;
+    }
 }

@@ -18,7 +18,7 @@ public class GameManager {
 
     public synchronized void assignPlayer(PlayerSession session) throws InterruptedException {
         waitingQueue.enqueue(session);          // inserisce in coda
-        if (!waitingQueue.isEmpty()) {
+        if (waitingQueue.getSize() >= 2) {
             PlayerSession p1 = waitingQueue.dequeue(); // primo giocatore
             PlayerSession p2 = waitingQueue.dequeue(); // secondo giocatore
             createGame(p1, p2);

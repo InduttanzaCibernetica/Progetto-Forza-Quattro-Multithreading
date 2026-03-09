@@ -12,10 +12,10 @@ public class ValidMessage implements ServerEvent {
 	}
  
 	public void printBoard() {
-		for(int i = 1; i<board.length(); i++) {
+		for(int i = 0; i<board.length(); i++) {
 			System.out.print(board.charAt(i));
 			
-			if (i % COLUMNS == 0) {
+			if ( (i+1) % COLUMNS == 0) {
 				System.out.print('\n');
 			}
 		}
@@ -27,7 +27,7 @@ public class ValidMessage implements ServerEvent {
 	
 	@Override
 	public void action() {
-		System.out.println("La mossa era valida. Tabella:");
+		System.out.println("Tabella:");
 		printBoard();
 	}
 	

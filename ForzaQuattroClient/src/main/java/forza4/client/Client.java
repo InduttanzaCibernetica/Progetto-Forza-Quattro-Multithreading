@@ -43,7 +43,7 @@ public class Client {
 		else if (msg.getId().equals("TURN")){
 			msg.action();
 			String move;
-			
+			      
 			do {
 				System.out.println("Inserisci la tua mossa... (una colonna da 1 a 7, o forfeit per abbandonare.)");
 				move = scanner.nextLine();
@@ -66,11 +66,22 @@ public class Client {
 		
 		if(move.equals("forfeit")) {
 			return true;
-		} else if (Integer.parseInt(move) >= 1 && Integer.parseInt(move) <= 7) {
-			return true;
+		} else if (isNumeric(move)) {
+			if (Integer.parseInt(move) >= 1 && Integer.parseInt(move) <= 7) {
+				return true;
+			}
 		}
 		System.out.println("Mossa invalida.");
 		return false;
+	}
+	
+	public boolean isNumeric(String move) {
+		try {
+			Integer.parseInt(move);
+			return true;
+		} catch (NumberFormatException e) {
+			return false;
+		}
 	}
 	
 	//METODI GESTIONE COMUNICAZIONE
@@ -80,7 +91,10 @@ public class Client {
 	
 	public void disconnect() {
 		System.out.println("Disconnessione in corso...");
+		
+		if (this.listener != null) {
 		listener.stop();
+		}
 		
 		try {
 			if (this.socket != null) {
@@ -124,8 +138,12 @@ public class Client {
 		while(playing) {
 			try {
 				servermsg = listener.getMessage();
-				ServerEvent msg = parser.parse(servermsg);
-				handleEvent(msg);
+				if (servermsg.equals("DISCONNECT_INTERNAL")) {
+					break;
+				} else {
+					ServerEvent msg = parser.parse(servermsg);
+					handleEvent(msg);
+				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -133,10 +151,18 @@ public class Client {
 	}
 	
 	public static void main (String[] args) {
+		Scanner s = new Scanner(System.in);
 		String serverAddress = "127.0.0.1";
 		int port = 5678;
-		Client c = new Client("ciao", 99);
+		
+		System.out.println("Inserisci il tuo nome: ");
+		String name = s.nextLine();
+		
+		System.out.println("Inserisci la tua età: ");
+		int age = s.nextInt();
+		Client c = new Client(name, age);
 		c.start(serverAddress, port);
+		s.close();
 	}
 }
  

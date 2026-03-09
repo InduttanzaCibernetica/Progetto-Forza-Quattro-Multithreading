@@ -28,7 +28,7 @@ public class ValidMessage implements ServerEvent {
 	
 	@Override
 	public String toString() {
-		return ServerEvent.enumToString(id) + this.board;
+		return ServerEvent.enumToString(id) + ";" + this.board;
 	}
 }
  
