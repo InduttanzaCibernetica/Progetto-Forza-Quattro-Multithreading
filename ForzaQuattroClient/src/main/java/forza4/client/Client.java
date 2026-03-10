@@ -14,6 +14,9 @@ public class Client {
 	private String username;
 	private int age;
 	private boolean playing;
+	private volatile boolean waitingMove = false;
+	
+	private final Set<String> DisconnectValues = Set.of("DISCONNECT", "DRAW", "ERROR", "LOSE", "TIMEOUT", "WIN"); //Set dei messaggi che fanno disconnettere il client
 	
 	private Scanner scanner;
 	private ClientCommand currentmsg;
@@ -21,6 +24,7 @@ public class Client {
 	
 	private Socket socket;
 	private ServerListener listener;
+	private Thread listenerThread;
 	private PrintWriter out;
 	
 	public Client(String username, int age) {
@@ -34,31 +38,44 @@ public class Client {
 	
 	public void handleEvent(ServerEvent msg) {
 		
-		Set<String> DisconnectValues = Set.of("DISCONNECT", "DRAW", "ERROR", "LOSE", "TIMEOUT", "WIN"); //Set dei messaggi che fanno disconnettere il client
+		msg.action();
 		
 		if (DisconnectValues.contains(msg.getId())) {
-			msg.action();
-			this.disconnect();
+			disconnect();
+			return;
 		}
 		else if (msg.getId().equals("TURN")){
-			msg.action();
-			String move;
-			      
+			if (!waitingMove) {
+				waitingMove = true;
+				new Thread(() -> {
+					askMove();
+				}).start(); // in teoria questo aggiusta i problemi di disconnessione
+			}
+		}
+	}
+	
+	public void askMove() {
+		String move; //dichiarata qui perchè sennò non la trova il ciclo do while
+		
+		try {
+			
 			do {
+				if (!playing) return;
 				System.out.println("Inserisci la tua mossa... (una colonna da 1 a 7, o forfeit per abbandonare.)");
 				move = scanner.nextLine();
 			}while(!checkMove(move));
 			
-			if (move.equals("forfeit")) {
-				currentmsg = new QuitMessage();
-				sendCommand(MessageFormatter.format(currentmsg));
-			} else {
-				currentmsg = new MoveMessage(Integer.parseInt(move));
-				sendCommand(MessageFormatter.format(currentmsg));
-			}
-			
+		} catch (Exception e) {
+			return;
+		}
+		
+		if (!playing) return;
+		if (move.equals("forfeit")) {
+			currentmsg = new QuitMessage();
+			sendCommand(MessageFormatter.format(currentmsg));
 		} else {
-			msg.action();
+			currentmsg = new MoveMessage(Integer.parseInt(move));
+			sendCommand(MessageFormatter.format(currentmsg));
 		}
 	}
 	
@@ -91,9 +108,15 @@ public class Client {
 	
 	public void disconnect() {
 		System.out.println("Disconnessione in corso...");
+		this.playing = false;
+		waitingMove = false;
 		
 		if (this.listener != null) {
 		listener.stop();
+		}
+		
+		if (listenerThread != null) {
+			listenerThread.interrupt();
 		}
 		
 		try {
@@ -104,10 +127,13 @@ public class Client {
 			if (this.out != null) {
 				out.close();
 			}
+			
+			if (this.scanner != null) {
+				scanner.close();
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		this.playing = false;
 		System.out.println("Disconnessione effettuata.");
 	}
 	
@@ -117,8 +143,8 @@ public class Client {
 		try {
 			this.socket = new Socket(serverAddress, port);
 			this.listener = new ServerListener(socket);
-			Thread tr = new Thread(listener);
-			tr.start();
+			listenerThread = new Thread(listener);
+			listenerThread.start();
 			this.out = new PrintWriter(socket.getOutputStream(), true); //true serve ad attivare l'auto flush, quindi i messaggi vengono inviati subito e tolti dal buffer
 			play();
 			
@@ -137,13 +163,12 @@ public class Client {
 		
 		while(playing) {
 			try {
+				System.out.println("Aspetto messaggio...");
 				servermsg = listener.getMessage();
-				if (servermsg.equals("DISCONNECT_INTERNAL")) {
-					break;
-				} else {
-					ServerEvent msg = parser.parse(servermsg);
-					handleEvent(msg);
-				}
+				System.out.println("Ricevuto: " + servermsg);
+				
+				ServerEvent msg = parser.parse(servermsg);
+				handleEvent(msg);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

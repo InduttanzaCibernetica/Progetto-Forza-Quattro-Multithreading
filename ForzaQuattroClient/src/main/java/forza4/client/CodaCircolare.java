@@ -14,6 +14,9 @@ public class CodaCircolare {
 	
 	public synchronized void inserisci(String messaggio) throws InterruptedException {
 	    while (count == buffer.length) { //guardia
+	    	if (Thread.currentThread().isInterrupted()) {
+	            throw new InterruptedException();
+	        }
 	        wait();
 	    }
 	    buffer[tail] = messaggio;
@@ -25,6 +28,9 @@ public class CodaCircolare {
 	
 	public synchronized String preleva() throws InterruptedException {
 	    while (count == 0) { //guardia
+	    	if (Thread.currentThread().isInterrupted()) {
+	            throw new InterruptedException();
+	        }
 	        wait();
 	    }
 	    String messaggio = buffer[head];
