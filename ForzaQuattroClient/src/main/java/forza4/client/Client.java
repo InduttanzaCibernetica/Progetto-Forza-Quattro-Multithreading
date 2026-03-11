@@ -192,7 +192,7 @@ public class Client {
 		
 		while(playing) {
 			try {
-				System.out.println("Aspetto messaggio...");
+				//System.out.println("Aspetto messaggio...");
 				servermsg = listener.getMessage();
 				
 				ServerEvent msg = parser.parse(servermsg);

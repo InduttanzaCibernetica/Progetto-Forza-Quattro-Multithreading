@@ -51,9 +51,7 @@ public class GameRoom {
         timer.start(this, TIMEOUT_MILLIS);
     }
 
-    public synchronized boolean handleMove(PlayerSession session, int col) {
-    	
-    	System.out.println("handleMove chiamato, stato: " + state + ", col: " + col); //per debugging
+    public synchronized boolean handleMove(PlayerSession session, int col) { 
     	
         if (state != GameState.ACTIVE) return false;
         if (session.getPlayer().getToken() != currentTurn) {
