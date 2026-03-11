@@ -27,7 +27,7 @@ public class MessageParser {
 			msg = new LoseMessage(strarr[1]);
 			break;
 		case "START":
-			msg = new StartMessage(strarr[1]);
+			msg = new StartMessage(strarr[1], strarr[2]);
 			break;
 		case "TIMEOUT":
 			msg = new TimeoutMessage();

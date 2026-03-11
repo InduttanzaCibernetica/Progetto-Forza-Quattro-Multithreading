@@ -137,12 +137,11 @@ public class Client {
 		
 		
 		if (this.listener != null) {
+		listenerThread.interrupt();
 		listener.stop();
 		}
 		
-		if (listenerThread != null) {
-			listenerThread.interrupt();
-		}
+		
 		if (moveThread != null) { //a regola client si disconnette
 			moveThread.interrupt();
 		}

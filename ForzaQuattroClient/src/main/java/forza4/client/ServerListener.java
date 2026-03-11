@@ -28,21 +28,23 @@ public class ServerListener implements Runnable {
 	
 	public void stop() {
 		running = false;
+		synchronized(coda) {
+			coda.notifyAll();
+		}	
 		try {
-			if(this.reader != null) {
-				this.reader.close();
-			}
 			if(this.socket != null) {
 				socket.close();
 			}
-			synchronized(coda) {
-				coda.notifyAll();
+			
+			if(this.reader != null) {
+				this.reader.close();
 			}
+
 			//coda.inserisci("DISCONNECT_INTERNAL");
 		} catch (IOException e){
 			e.printStackTrace();
 		}
-		coda.stop(); //questo per svegliare preleva() e la fa uscire
+		
 		
 	}
 	
@@ -56,10 +58,10 @@ public class ServerListener implements Runnable {
 			try {
 				String message = reader.readLine();
 				
-				if(message == null) {
-	                stop();
-	                break;
-	            }
+			//	if(message == null) {
+	        //        stop();
+	        //        break;
+	        //    }
 				
 				coda.inserisci(message);
 			} catch(IOException | InterruptedException e) {

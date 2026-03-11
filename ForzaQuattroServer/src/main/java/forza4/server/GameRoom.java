@@ -33,10 +33,10 @@ public class GameRoom {
         currentTurn = player1.getPlayer().getToken(); // player1 ha sempre X e inizia
         
         // manda START a entrambi
-        currentEvent = new StartMessage(player1.getPlayer().getToken());
+        currentEvent = new StartMessage(player1.getPlayer().getToken(), player2.getPlayer().getName());
         player1.getHandler().sendMessage(formatter.format(currentEvent));
         
-        currentEvent = new StartMessage(player2.getPlayer().getToken());
+        currentEvent = new StartMessage(player2.getPlayer().getToken(), player1.getPlayer().getName());
         player2.getHandler().sendMessage(formatter.format(currentEvent));
 
         // manda la griglia vuota
