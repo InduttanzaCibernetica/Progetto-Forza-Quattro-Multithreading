@@ -31,7 +31,7 @@ public class GameManager {
         PlayerSession second = (first == p1) ? p2 : p1;
         first.getPlayer().setToken(Token.X);   // chi inizia prende X
         second.getPlayer().setToken(Token.O);  // l'altro prende O
-        GameRoom room = new GameRoom(p1, p2, activeGames);
+        GameRoom room = new GameRoom(first, second, activeGames);
         activeGames.addGame(room);
         p1.getHandler().setRoom(room);
         p2.getHandler().setRoom(room);

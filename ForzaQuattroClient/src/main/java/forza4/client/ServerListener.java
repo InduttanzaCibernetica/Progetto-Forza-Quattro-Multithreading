@@ -42,6 +42,7 @@ public class ServerListener implements Runnable {
 		} catch (IOException e){
 			e.printStackTrace();
 		}
+		coda.stop(); //questo per svegliare preleva() e la fa uscire
 		
 	}
 	

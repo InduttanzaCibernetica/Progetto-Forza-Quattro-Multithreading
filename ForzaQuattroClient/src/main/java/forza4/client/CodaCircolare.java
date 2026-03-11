@@ -6,11 +6,16 @@ public class CodaCircolare {
 	private int head = 0;
 	private int tail = 0;
 	private int count = 0;
+	private boolean stopped = false; // un flag per la chiusura
 	
 	public CodaCircolare(int size) {
 	    buffer = new String[size];
 	}
 	
+    public synchronized void stop() { // ||per la chiusura||
+        stopped = true;
+        notifyAll();
+    }
 	
 	public synchronized void inserisci(String messaggio) throws InterruptedException {
 	    while (count == buffer.length) { //guardia

@@ -16,9 +16,9 @@ public class Client {
 	private boolean playing;
 	private volatile boolean waitingMove = false;
 	
-	private final Set<String> DisconnectValues = Set.of("DISCONNECT", "DRAW", "ERROR", "LOSE", "TIMEOUT", "WIN"); //Set dei messaggi che fanno disconnettere il client
-	
-	private Scanner scanner;
+	private final Set<String> DisconnectValues = Set.of("DISCONNECT", "DRAW", "LOSE", "TIMEOUT", "WIN"); //Set dei messaggi che fanno disconnettere il client
+												//ho tolto ERRORE dopo draw  ^
+	private Scanner scanner;					//							 |
 	private ClientCommand currentmsg;
 	private MessageParser parser;
 	
@@ -26,6 +26,10 @@ public class Client {
 	private ServerListener listener;
 	private Thread listenerThread;
 	private PrintWriter out;
+	
+	
+	private Thread moveThread;
+	
 	
 	public Client(String username, int age) {
 		this.username = username;
@@ -47,10 +51,23 @@ public class Client {
 		else if (msg.getId().equals("TURN")){
 			if (!waitingMove) {
 				waitingMove = true;
-				new Thread(() -> {
+				
+				moveThread = new Thread(() -> {
+				//new Thread(() -> {
 					askMove();
-				}).start(); // in teoria questo aggiusta i problemi di disconnessione
+				}); //.start(); // in teoria questo aggiusta i problemi di disconnessione
+				moveThread.start();
 			}
+		}
+		
+		
+		else if (msg.getId().equals("ERROR")) {
+		    waitingMove = false;
+		    waitingMove = true;
+		    moveThread = new Thread(() -> {
+		        askMove();
+		    });
+		    moveThread.start();
 		}
 	}
 	
@@ -77,6 +94,8 @@ public class Client {
 			currentmsg = new MoveMessage(Integer.parseInt(move));
 			sendCommand(MessageFormatter.format(currentmsg));
 		}
+		
+		waitingMove = false; //aggiunto per risolvere problema deadlock e resettare flag dopo aver inviato mossa
 	}
 	
 	public boolean checkMove(String move) {
@@ -111,6 +130,12 @@ public class Client {
 		this.playing = false;
 		waitingMove = false;
 		
+		if (this.scanner != null) {
+			scanner.close();
+		}
+		
+		
+		
 		if (this.listener != null) {
 		listener.stop();
 		}
@@ -118,6 +143,10 @@ public class Client {
 		if (listenerThread != null) {
 			listenerThread.interrupt();
 		}
+		if (moveThread != null) { //a regola client si disconnette
+			moveThread.interrupt();
+		}
+		
 		
 		try {
 			if (this.socket != null) {
@@ -128,9 +157,7 @@ public class Client {
 				out.close();
 			}
 			
-			if (this.scanner != null) {
-				scanner.close();
-			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -170,7 +197,8 @@ public class Client {
 				ServerEvent msg = parser.parse(servermsg);
 				handleEvent(msg);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				//e.printStackTrace();
+				break;
 			}
 		}
 	}

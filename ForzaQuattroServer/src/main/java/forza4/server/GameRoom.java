@@ -20,7 +20,7 @@ public class GameRoom {
     private GameState state = GameState.WAITING;
     private ServerEvent currentEvent;
 
-    private static final long TIMEOUT_MILLIS = 30_000; // 30 secondi per turno
+    private static final long TIMEOUT_MILLIS = 60_000; // 60 secondi per turno
 
     public GameRoom(PlayerSession player1, PlayerSession player2, GameQueue activeGames) {
         this.player1 = player1;
@@ -52,6 +52,9 @@ public class GameRoom {
     }
 
     public synchronized boolean handleMove(PlayerSession session, int col) {
+    	
+    	System.out.println("handleMove chiamato, stato: " + state + ", col: " + col); //per debugging
+    	
         if (state != GameState.ACTIVE) return false;
         if (session.getPlayer().getToken() != currentTurn) {
         	currentEvent = new ErrorMessage("Non è il tuo turno");
@@ -92,10 +95,14 @@ public class GameRoom {
         return true;
     }
 
-    public void onTimeout() {
+    public synchronized void onTimeout() {
         if (state != GameState.ACTIVE) return;
         	currentEvent = new TimeoutMessage();
-	        broadcast(formatter.format(currentEvent));
+        	
+        	getSessionByToken(currentTurn).getHandler().sendMessage(formatter.format(currentEvent));
+
+        	
+	        //broadcast(formatter.format(currentEvent));
 	        
 	        currentEvent = new WinMessage("Avversario in timeout");
 	        getOpponent(getSessionByToken(currentTurn)).getHandler().sendMessage(formatter.format(currentEvent));
@@ -103,7 +110,7 @@ public class GameRoom {
 	        endGame();
     }
 
-    public void onDisconnect(PlayerSession session) {
+    public synchronized void onDisconnect(PlayerSession session) {
         if (state != GameState.ACTIVE) return;
         currentEvent = new DisconnectMessage();
         getSessionByToken(currentTurn).getHandler().sendMessage(formatter.format(currentEvent));
