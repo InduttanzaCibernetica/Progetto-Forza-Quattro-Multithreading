@@ -1,0 +1,35 @@
+sequenceDiagram
+    autonumber
+    participant C1 as Client1
+    participant S as Server
+    participant C2 as Client2
+ 
+ 
+C1->>S: Connessione al server
+S-->>C1: Connessione accettata
+S-->>C1: Attesa Connessione Avversario
+ 
+C2->>S: Connessione al server
+S-->>C2: Connessione accettata
+S-->>C1: Inizio Partita
+S-->>C2: Inizio Partita (broadcast)
+ 
+note over C1, C2: Inizio Partita
+S-->>C1: Mostra matrice vuota
+ 
+loop iterazione turno
+    C1->>S: Mossa
+    S->>S: Controllo Vittoria: falso
+    S-->>C2: Mostra Matrice aggiornata e avviso turno
+    C2->>S: Mossa
+    S->>S: Controllo Vittoria: falso
+    S-->>C1: Mostra Matrice aggiornata e avviso turno
+end
+ 
+note over C1, C2: Fine Partita e Risultati
+C1->>S: Mossa
+S-->>S: Controllo Vittoria: vero
+S-->>C1: Annuncio Vittoria di Client1
+S-->>C2: Annuncio Vittoria di Client1 (broadcast)
+S-->>C1: Chiusura Connessione
+S-->>C2: Chiusura Connessione

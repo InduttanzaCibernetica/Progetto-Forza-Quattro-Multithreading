@@ -1,0 +1,103 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide stereotype
+
+package enums {
+  enum ClientCommandType
+  enum ServerEventType
+}
+
+package messaggiClient {
+  interface ClientCommand
+  class ConnectMessage {
+     +getId(): String
+     +getName(): String
+     +getAge(): int
+  }
+  class MoveMessage {
+     +getId(): String
+     +getColumn(): int
+  }
+  class QuitMessage {
+     +getId(): String
+  }
+  ClientCommand <|.. ConnectMessage
+  ClientCommand <|.. MoveMessage
+  ClientCommand <|.. QuitMessage
+}
+
+package messaggiServer {
+  interface ServerEvent {
+     +getId(): String
+     +action(): void
+  }
+  class DisconnectMessage
+  class DrawMessage
+  class ErrorMessage {
+     +getDescrizione(): String
+  }
+  class LoseMessage
+  class StartMessage
+  class TimeoutMessage
+  class TurnMessage
+  class ValidMessage
+  class WaitMessage
+  class WelcomeMessage
+  class WinMessage
+  ServerEvent <|.. DisconnectMessage
+  ServerEvent <|.. DrawMessage
+  ServerEvent <|.. ErrorMessage
+  ServerEvent <|.. LoseMessage
+  ServerEvent <|.. StartMessage
+  ServerEvent <|.. TimeoutMessage
+  ServerEvent <|.. TurnMessage
+  ServerEvent <|.. ValidMessage
+  ServerEvent <|.. WaitMessage
+  ServerEvent <|.. WelcomeMessage
+  ServerEvent <|.. WinMessage
+}
+
+package client {
+  class MessageParser {
+     +parse(raw: String): messaggiServer.ServerEvent
+  }
+  class MessageFormatter {
+     +format(cmd: messaggiClient.ClientCommand): String
+  }
+  class CodaCircolare {
+     +inserisci(msg: String)
+     +preleva(): String
+     +stop(): void
+  }
+  class ServerListener {
+     -socket: Socket
+     -coda: CodaCircolare
+     +getMessage(): String
+     +stop(): void
+     +run()
+  }
+  class Client {
+     -listener: ServerListener
+     -coda: CodaCircolare
+     -parser: MessageParser
+     -formatter: MessageFormatter
+     +start(serverAddress: String, port: int)
+     +play()
+     +handleEvent(msg: messaggiServer.ServerEvent)
+     +askMove()
+     +sendCommand(message: String)
+     +disconnect()
+  }
+}
+
+' Relazioni principali
+client.Client --> client.ServerListener : spawna/coordina
+client.Client --> client.CodaCircolare : usa
+client.ServerListener --> client.CodaCircolare : produce
+client.Client --> client.MessageParser : usa (RX)
+client.Client --> client.MessageFormatter : usa (TX)
+client.MessageFormatter ..> messaggiClient.ClientCommand : formatta
+client.MessageParser ..> messaggiServer.ServerEvent : crea
+client.Client ..> messaggiServer.ServerEvent : gestisce
+
+@enduml
