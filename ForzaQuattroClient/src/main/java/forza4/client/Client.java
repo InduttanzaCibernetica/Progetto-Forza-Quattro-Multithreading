@@ -5,6 +5,9 @@ import java.net.Socket;
 import java.util.Scanner;
 import java.util.Set;
 import java.io.PrintWriter;
+import java.net.UnknownHostException;
+import java.net.ConnectException;
+import java.net.SocketTimeoutException;
  
 import messaggiClient.*;
 import messaggiServer.*;
@@ -53,21 +56,21 @@ public class Client {
 				waitingMove = true;
 				
 				moveThread = new Thread(() -> {
-				//new Thread(() -> {
 					askMove();
-				}); //.start(); // in teoria questo aggiusta i problemi di disconnessione
+				}); // in teoria questo aggiusta i problemi di disconnessione
 				moveThread.start();
 			}
 		}
 		
 		
 		else if (msg.getId().equals("ERROR")) {
-		    waitingMove = false;
-		    waitingMove = true;
-		    moveThread = new Thread(() -> {
-		        askMove();
-		    });
-		    moveThread.start();
+			if(((ErrorMessage)msg).getDescrizione().equals("Colonna non disponibile")) {
+			    waitingMove = true;
+			    moveThread = new Thread(() -> {
+			        askMove();
+			    });
+			    moveThread.start();
+			}
 		}
 	}
 	
@@ -164,7 +167,7 @@ public class Client {
 	}
 	
 	//METODI INIZIO PARTITA
-	public void start(String serverAddress, int port) {
+	public void start (String serverAddress, int port) throws UnknownHostException, ConnectException, SocketTimeoutException {
 		
 		try {
 			this.socket = new Socket(serverAddress, port);
@@ -191,7 +194,6 @@ public class Client {
 			try {
 				System.out.println("Aspetto messaggio...");
 				servermsg = listener.getMessage();
-				System.out.println("Ricevuto: " + servermsg);
 				
 				ServerEvent msg = parser.parse(servermsg);
 				handleEvent(msg);
@@ -204,7 +206,9 @@ public class Client {
 	
 	public static void main (String[] args) {
 		Scanner s = new Scanner(System.in);
-		String serverAddress = "127.0.0.1";
+	    System.out.println("Inserisci l'ip del server a cui vuoi connetterti...");
+	    System.out.println("Se il server e' stato avviato sulla tua macchina inserisci 0.0.0.0:");
+		String serverAddress = s.nextLine();
 		int port = 5678;
 		
 		System.out.println("Inserisci il tuo nome: ");
@@ -213,7 +217,11 @@ public class Client {
 		System.out.println("Inserisci la tua età: ");
 		int age = s.nextInt();
 		Client c = new Client(name, age);
+		try {
 		c.start(serverAddress, port);
+		} catch (UnknownHostException | ConnectException | SocketTimeoutException e) {
+			System.out.println("Errore nella connessione al server.");
+		}
 		s.close();
 	}
 }

@@ -14,6 +14,9 @@ public class ErrorMessage implements ServerEvent {
 		return ServerEvent.enumToString(this.id);
 	}
 	
+	public String getDescrizione() {
+		return this.descrizione;
+	}
 	@Override
 	public void action() {
 		System.out.println("Errore: " + this.descrizione);
